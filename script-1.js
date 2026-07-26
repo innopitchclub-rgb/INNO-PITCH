@@ -60,9 +60,10 @@ window.addEventListener('load', () => {
   initPremiumText();
 });
 
-// generate simple stars once
-if (starfield) {
-  const STAR_COUNT = 110;
+// generate simple stars once on pointer-fine devices only
+const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+if (starfield && hasFinePointer) {
+  const STAR_COUNT = 66;
   for (let i = 0; i < STAR_COUNT; i += 1) {
     const s = document.createElement('span');
     s.className = 'star';
@@ -76,8 +77,6 @@ if (starfield) {
     s.style.animationDuration = `${1.4 + Math.random() * 3.0}s`;
     s.style.animationDelay = `${Math.random() * 3}s`;
     if (size > 2.6) s.style.filter = 'blur(0.6px)';
-    // parallax factor (larger => moves more with scroll)
-    s.dataset.parallax = `${Math.random() * 0.9 + 0.2}`;
     starfield.appendChild(s);
   }
 }
@@ -102,54 +101,74 @@ const progressBar = document.getElementById('scrollProgress');
 const backToTop = document.getElementById('backToTop');
 const revealItems = document.querySelectorAll('.hero-copy, .hero-card, .about-intro, .about-grid, .about-point, .detail-card, .leader-card, .team-card, .event-card, .apply-inner, .apply-form, .member-card, .events-empty');
 
-const revealOnScroll = () => {
-  const scrollTop = window.scrollY + window.innerHeight * 0.9;
+revealItems.forEach((item, index) => {
+  item.classList.add('reveal');
+  item.style.transitionDelay = `${Math.min(index * 60, 220)}ms`;
+});
 
-  revealItems.forEach((item, index) => {
-    if (!item.classList.contains('reveal')) {
-      item.classList.add('reveal');
-    }
-    if (scrollTop > item.offsetTop) {
-      item.classList.add('is-visible');
-      item.style.transitionDelay = `${Math.min(index * 60, 220)}ms`;
-    }
-  });
+if ('IntersectionObserver' in window) {
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-visible');
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.14, rootMargin: '0px 0px -12% 0px' });
+  revealItems.forEach((item) => revealObserver.observe(item));
+} else {
+  revealItems.forEach((item) => item.classList.add('is-visible'));
+}
+
+let latestScrollY = window.scrollY;
+let scrollTicking = false;
+
+const updateScrollEffects = () => {
+  const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = scrollHeight > 0 ? latestScrollY / scrollHeight : 0;
 
   if (header) {
-    header.classList.toggle('scrolled', window.scrollY > 12);
+    header.classList.toggle('scrolled', latestScrollY > 12);
   }
 
-  // scroll progress used for parallax and rocket movement
-  const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = scrollHeight > 0 ? window.scrollY / scrollHeight : 0;
-
-  // move starfield for subtle parallax
   if (starfield) {
-    // translate the whole field slightly
     starfield.style.transform = `translateY(${ -progress * 12 }%)`;
-    // layered per-star parallax for depth
-    const stars = starfield.querySelectorAll('.star');
-    stars.forEach((s) => {
-      const p = parseFloat(s.dataset.parallax) || 0.6;
-      s.style.transform = `translateY(${ -progress * 40 * p }px)`;
-    });
   }
-
-  // (rocket animations removed)
 
   if (progressBar) {
-    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = scrollHeight > 0 ? window.scrollY / scrollHeight : 0;
     progressBar.style.transform = `scaleX(${Math.min(progress, 1)})`;
   }
 
   if (backToTop) {
-    backToTop.classList.toggle('show', window.scrollY > 600);
+    backToTop.classList.toggle('show', latestScrollY > 600);
+  }
+
+  scrollTicking = false;
+};
+
+const handleScroll = () => {
+  latestScrollY = window.scrollY;
+  if (!scrollTicking) {
+    scrollTicking = true;
+    requestAnimationFrame(updateScrollEffects);
   }
 };
 
-window.addEventListener('scroll', revealOnScroll, { passive: true });
-window.addEventListener('load', revealOnScroll);
+window.addEventListener('scroll', handleScroll, { passive: true });
+window.addEventListener('load', updateScrollEffects);
+
+const smoothAnchorLinks = document.querySelectorAll('a[href^="#"]:not([href="#"])');
+smoothAnchorLinks.forEach((link) => {
+  link.addEventListener('click', (event) => {
+    const href = link.getAttribute('href');
+    const targetId = href.slice(1);
+    const targetEl = document.getElementById(targetId) || document.querySelector(`[name="${targetId}"]`);
+    if (!targetEl) return;
+
+    if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || link.target === '_blank') return;
+    event.preventDefault();
+    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
 
 // ---------- ripple effect ----------
 const rippleButtons = document.querySelectorAll('.btn, .filter-pill, .checkbox-pill, .nav-toggle, .back-to-top');
@@ -169,33 +188,6 @@ rippleButtons.forEach((button) => {
   });
 });
 
-// ---------- mouse spotlight ----------
-const spotlight = document.querySelector('.spotlight');
-
-if (spotlight) {
-  window.addEventListener('mousemove', (event) => {
-    const x = event.clientX / window.innerWidth;
-    const y = event.clientY / window.innerHeight;
-    spotlight.style.transform = `translate(${(x - 0.5) * 20}px, ${(y - 0.5) * 12}px)`;
-    spotlight.style.opacity = '0.9';
-  });
-
-  window.addEventListener('mouseleave', () => {
-    spotlight.style.transform = 'translate(0, 0)';
-    spotlight.style.opacity = '0.6';
-  });
-}
-
-// ---------- lightweight particles ----------
-for (let i = 0; i < 16; i += 1) {
-  const particle = document.createElement('span');
-  particle.className = 'particle';
-  particle.style.left = `${Math.random() * 100}vw`;
-  particle.style.top = `${Math.random() * 100}vh`;
-  particle.style.animationDelay = `${Math.random() * 8}s`;
-  document.body.appendChild(particle);
-}
-
 // ---------- application form ----------
 const applyForm = document.getElementById('applyForm');
 
@@ -204,51 +196,53 @@ function sanitizeText(value) {
   return String(value || '').replace(/<[^>]*>/g, '').trim();
 }
 
-function readFileAsBase64(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) return resolve(null);
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(',')[1]);
-    reader.onerror = () => reject(new Error('Unable to read file.'));
-    reader.readAsDataURL(file);
-  });
+const STORAGE_KEY = 'innopitch_registrations';
+
+function normalizeRegistrationRecord(row = {}) {
+  const normalized = { ...row };
+  normalized.Name = sanitizeText(row.Name || row.name || row.fullName || '');
+  normalized.Email = sanitizeText(row.Email || row.email || row.studentEmail || row['Email Address'] || row['email address'] || '');
+  normalized['Register Number'] = sanitizeText(row['Register Number'] || row.regNumber || row['register number'] || '');
+  normalized.Department = sanitizeText(row.Department || row.department || '');
+  normalized.Year = sanitizeText(row.Year || row.year || '');
+  normalized.Phone = sanitizeText(row.Phone || row.phone || '');
+  normalized.Status = sanitizeText(row.Status || row.status || 'Pending');
+  return normalized;
 }
 
-function previewUploadedFile(input, previewBox, isImage = false) {
-  const file = input.files && input.files[0];
-  if (!file) {
-    previewBox.hidden = true;
-    previewBox.innerHTML = '';
-    return;
+function loadRegistrationsFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const rows = raw ? JSON.parse(raw) : [];
+    return Array.isArray(rows) ? rows.map(normalizeRegistrationRecord) : [];
+  } catch (error) {
+    console.warn('Failed to parse stored registrations:', error);
+    return [];
   }
-  previewBox.hidden = false;
-  previewBox.innerHTML = isImage ? `<img src="" alt="Preview" />` : `<span>${file.name}</span>`;
-  if (isImage) {
-    const img = previewBox.querySelector('img');
-    const reader = new FileReader();
-    reader.onload = () => { img.src = reader.result; };
-    reader.readAsDataURL(file);
+}
+
+function saveRegistrationsToStorage(rows) {
+  const normalizedRows = Array.isArray(rows) ? rows.map(normalizeRegistrationRecord) : [];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedRows));
+}
+
+function generateRegistrationId(regNumber, rows) {
+  const sanitizedRegNumber = String(regNumber || '').trim().replace(/\s+/g, '');
+  if (sanitizedRegNumber) {
+    return `INNO${sanitizedRegNumber}`;
   }
+  const prefix = `INNO-${new Date().getFullYear()}-`;
+  const count = rows.filter((row) => String(row['Registration ID'] || '').startsWith(prefix)).length;
+  return prefix + String(count + 1).padStart(4, '0');
 }
 
 if (applyForm) {
   const formStatus = document.getElementById('formStatus');
   const submitBtn = applyForm.querySelector('button[type="submit"]');
   const cancelBtn = document.getElementById('cancelRegistrationBtn');
-  const photoInput = document.getElementById('photo');
-  const resumeInput = document.getElementById('resume');
-  const photoPreview = document.getElementById('photoPreview');
-  const resumePreview = document.getElementById('resumePreview');
-
-  photoInput?.addEventListener('change', () => previewUploadedFile(photoInput, photoPreview, true));
-  resumeInput?.addEventListener('change', () => previewUploadedFile(resumeInput, resumePreview));
 
   cancelBtn?.addEventListener('click', () => {
     applyForm.reset();
-    photoPreview.hidden = true;
-    resumePreview.hidden = true;
-    photoPreview.innerHTML = '';
-    resumePreview.innerHTML = '';
     formStatus.textContent = 'Form cleared. You can start again.';
     formStatus.style.color = '';
     window.location.href = 'index.html';
@@ -307,37 +301,44 @@ if (applyForm) {
         _gotcha: document.querySelector('input[name="_gotcha"]')?.value || ''
       };
 
-      if (photoInput?.files?.[0]) {
-        payload.photoBase64 = await readFileAsBase64(photoInput.files[0]);
-        payload.photoName = photoInput.files[0].name;
-        payload.photoType = photoInput.files[0].type;
-      }
-      if (resumeInput?.files?.[0]) {
-        payload.resumeBase64 = await readFileAsBase64(resumeInput.files[0]);
-        payload.resumeName = resumeInput.files[0].name;
-        payload.resumeType = resumeInput.files[0].type;
-      }
 
-      const response = await fetch(applyForm.action, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+      const rows = loadRegistrationsFromStorage();
+      const duplicate = rows.find((row) => {
+        const sameEmail = String(row.Email || '').toLowerCase() === String(payload.email || '').toLowerCase();
+        const sameReg = String(row['Register Number'] || '').toLowerCase() === String(payload.regNumber || '').toLowerCase();
+        return sameEmail || sameReg;
       });
-
-      const data = await response.json();
-      if (response.ok && data.ok) {
-        formStatus.style.color = '';
-        formStatus.textContent = `Thanks, ${payload.fullName.split(' ')[0]} — your application is in. Your ID: ${data.registrationId || ''}`;
-        applyForm.reset();
-        photoPreview.hidden = true; resumePreview.hidden = true;
-        photoPreview.innerHTML = ''; resumePreview.innerHTML = '';
-      } else {
-        formStatus.style.color = '#E8483A';
-        formStatus.textContent = data.error || (data.errors && data.errors[0]) || 'Submission failed. Please try again.';
+      if (duplicate) {
+        throw new Error('Duplicate registration detected. Please use a different email or register number.');
       }
+
+      const registrationId = generateRegistrationId(payload.regNumber, rows);
+      const row = {
+        'Registration ID': registrationId,
+        Timestamp: new Date().toISOString(),
+        Name: payload.fullName,
+        'Register Number': payload.regNumber,
+        Department: payload.department,
+        Year: payload.year,
+        Email: payload.email,
+        Phone: payload.phone,
+        Gender: payload.gender,
+        Skills: Array.isArray(payload.skills) ? payload.skills.join(', ') : payload.skills || '',
+        Interest: payload.interest,
+        Experience: payload.experience,
+        Reason: payload.reason,
+        Status: 'Pending'
+      };
+      rows.push(normalizeRegistrationRecord(row));
+      saveRegistrationsToStorage(rows);
+
+      formStatus.style.color = '';
+      formStatus.textContent = `Thanks, ${payload.fullName.split(' ')[0]} — your application is in. Your ID: ${registrationId}.`;
+      applyForm.reset();
+      // reset action completed
     } catch (err) {
       formStatus.style.color = '#E8483A';
-      formStatus.textContent = 'Submission failed. Please try again.';
+      formStatus.textContent = err.message || 'Submission failed. Please try again.';
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Submit application';
@@ -453,31 +454,6 @@ if (applyForm) {
   }
 })();
 
-// ---------- hero particle field ----------
-(function initHeroParticles() {
-  const host = document.querySelector('.hero-particle-layer');
-  if (!host) return;
-
-  const particleCount = window.innerWidth < 700 ? 28 : 46;
-  for (let i = 0; i < particleCount; i += 1) {
-    const p = document.createElement('span');
-    p.className = 'hero-particle';
-    const size = 2 + Math.random() * 7;
-    const dx = `${(Math.random() - 0.5) * 220}px`;
-    const dy = `${(Math.random() - 0.5) * 220}px`;
-    const opacity = 0.16 + Math.random() * 0.48;
-    p.style.width = `${size}px`;
-    p.style.height = `${size}px`;
-    p.style.left = `${Math.random() * 100}%`;
-    p.style.top = `${Math.random() * 100}%`;
-    p.style.setProperty('--dx', dx);
-    p.style.setProperty('--dy', dy);
-    p.style.setProperty('--opacity', String(opacity));
-    p.style.setProperty('--duration', `${5 + Math.random() * 7}s`);
-    host.appendChild(p);
-  }
-})();
-
 // ---------- smooth page-leave transition for same-site links ----------
 document.querySelectorAll('a[href$=".html"], a[href^="index.html"]').forEach((link) => {
   link.addEventListener('click', (event) => {
@@ -522,6 +498,42 @@ if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
   };
   requestAnimationFrame(animateGlow);
 }
+
+function createImageLightbox(src, alt) {
+  if (!src) return;
+  const backdrop = document.createElement('div');
+  backdrop.className = 'image-lightbox-backdrop';
+  backdrop.tabIndex = -1;
+
+  const card = document.createElement('div');
+  card.className = 'image-lightbox-card';
+  card.innerHTML = `
+    <button type="button" class="image-lightbox-close" aria-label="Close image">×</button>
+    <img src="${src}" alt="${alt || 'Full image'}">
+  `;
+
+  backdrop.appendChild(card);
+  backdrop.addEventListener('click', (event) => {
+    if (event.target === backdrop || event.target.classList.contains('image-lightbox-close')) {
+      backdrop.remove();
+    }
+  });
+
+  document.addEventListener('keydown', function handleEscape(event) {
+    if (event.key === 'Escape') {
+      backdrop.remove();
+      document.removeEventListener('keydown', handleEscape);
+    }
+  });
+
+  document.body.appendChild(backdrop);
+}
+
+document.addEventListener('click', (event) => {
+  const img = event.target.closest('.leader-avatar img, .member-avatar img');
+  if (!img) return;
+  createImageLightbox(img.src, img.alt || 'Full image');
+});
 
 // ---------- directional scroll reveals (fade-up/left/right/scale/blur/rotate) ----------
 (function initDirectionalReveals() {
@@ -578,7 +590,7 @@ if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
 
 // ---------- 3D tilt on cards ----------
 (function initTilt() {
-  const tiltSelectors = '.leader-card, .team-card, .event-card, .member-card, .detail-card, .about-point, .hero-card, .section-visual';
+  const tiltSelectors = '.team-card, .event-card, .detail-card, .about-point, .hero-card, .section-visual';
   const cards = document.querySelectorAll(tiltSelectors);
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 

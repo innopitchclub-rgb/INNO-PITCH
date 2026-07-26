@@ -27,8 +27,37 @@
           <h1>Registrations Dashboard</h1>
           <p>Use the admin password to manage applications. Data is stored locally in this browser.</p>
         </div>
-        <button id="logoutBtn" class="btn btn-ghost">Logout</button>
+        <div class="admin-header-actions">
+          <button id="refreshBtn" class="btn btn-outline">Refresh</button>
+          <button id="logoutBtn" class="btn btn-ghost">Logout</button>
+        </div>
       </header>
+
+      <div class="admin-dashboard-summary">
+        <div class="summary-cards">
+          <div class="summary-card">
+            <span class="summary-card-label">Total</span>
+            <span id="countTotal" class="summary-card-value">0</span>
+          </div>
+          <div class="summary-card summary-pending">
+            <span class="summary-card-label">Pending</span>
+            <span id="countPending" class="summary-card-value">0</span>
+          </div>
+          <div class="summary-card summary-approved">
+            <span class="summary-card-label">Approved</span>
+            <span id="countApproved" class="summary-card-value">0</span>
+          </div>
+          <div class="summary-card summary-rejected">
+            <span class="summary-card-label">Rejected</span>
+            <span id="countRejected" class="summary-card-value">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-search-bar">
+        <input type="text" id="searchRegistrations" placeholder="Search by email, name, or phone…" autocomplete="off" />
+        <button id="clearSearch" class="btn btn-outline small-btn">Clear</button>
+      </div>
 
       <div class="table-wrap">
         <table id="registrationsTable">
@@ -45,13 +74,22 @@
             </tr>
           </thead>
           <tbody id="registrationsBody">
-            <tr><td colspan="7">Loading registrations...</td></tr>
+            <tr><td colspan="8">Loading registrations...</td></tr>
           </tbody>
         </table>
       </div>
     </section>
   </main>
 
-  <script src="script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    if (window.emailjs && !window.__innopitchEmailjsInitialized) {
+      window.__innopitchEmailjsInitialized = true;
+      emailjs.init({
+        publicKey: "OTGn7vkLxLJnLZt_d"
+      });
+    }
+  </script>
+  <script src="admin.js"></script>
 </body>
 </html>

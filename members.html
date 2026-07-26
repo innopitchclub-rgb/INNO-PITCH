@@ -17,7 +17,6 @@
 <header class="site-header">
   <a href="index.html" class="brand">Inno<span>Pitch</span> &amp; <span class="brand-accent">Greenovation</span> Mavericks Club</a>
   <nav class="main-nav" id="mainNav">
-    <a href="index.html#about">About</a>
     <a href="index.html#leaders">Leaders</a>
     <a href="index.html#teams">Teams</a>
     <a href="members.html" class="active">Members</a>
@@ -45,11 +44,8 @@
     <div class="filter-row" id="filterRow">
       <button class="filter-pill active" data-filter="all">All members</button>
       <button class="filter-pill" data-filter="leadership">Leadership</button>
-      <button class="filter-pill" data-filter="campuscompost">CampusCompost</button>
-      <button class="filter-pill" data-filter="notesync">NoteSync</button>
-      <button class="filter-pill" data-filter="wattwise">Wattwise</button>
-      <button class="filter-pill" data-filter="carpoolu">Carpool U</button>
     </div>
+    <button id="refreshMembersBtn" class="btn btn-outline">Refresh members</button>
   </section>
 
   <!-- MEMBER GRID -->
@@ -67,7 +63,7 @@
 
       <article class="member-card" data-team="leadership">
         <div class="member-avatar">SP</div>
-        <h3>Sri Prasad</h3>
+        <h3>Sri Prasath</h3>
         <span class="member-role">Vice President</span>
         <p class="member-meta">3rd Year · 2024–2028</p>
         <span class="member-tag">Leadership</span>
@@ -90,7 +86,9 @@
       </article>
 
       <article class="member-card" data-team="leadership">
-        <div class="member-avatar">DD</div>
+        <div class="member-avatar">
+          <img src="dharshini-devi.jpeg" alt="Dharshini Devi P" loading="lazy" width="54" height="54">
+        </div>
         <h3>Dharshini Devi P</h3>
         <span class="member-role">Coordinator</span>
         <p class="member-meta">2nd Year · 2025–2029</p>
@@ -98,8 +96,20 @@
       </article>
 
       <article class="member-card" data-team="leadership">
-        <div class="member-avatar">MK</div>
+        <div class="member-avatar">
+          <img src="karthick-m.jpg" alt="Karthick M" loading="lazy" width="54" height="54">
+        </div>
         <h3>Karthick M</h3>
+        <span class="member-role">Coordinator</span>
+        <p class="member-meta">2nd Year · 2025–2029</p>
+        <span class="member-tag">Leadership</span>
+      </article>
+
+      <article class="member-card" data-team="leadership">
+        <div class="member-avatar">
+          <img src="divakar.jpeg" alt="Divakar" loading="lazy" width="54" height="54">
+        </div>
+        <h3>Divakar</h3>
         <span class="member-role">Assistant Coordinator</span>
         <p class="member-meta">2nd Year · 2025–2029</p>
         <span class="member-tag">Leadership</span>
@@ -107,6 +117,10 @@
 
     </div>
   </section>
+
+  <div id="memberEmpty" class="events-empty" hidden>
+    <p>No approved members have been added yet. Once the admin approves a registration, it will appear here.</p>
+  </div>
 </main>
 
 <section class="contact" id="contact">
@@ -135,30 +149,117 @@
 
 <script src="script-1.js"></script>
 <script>
-  // Filter pills for the members page — scoped here since it's the
-  // only page that needs it.
+  const STORAGE_KEY = 'innopitch_registrations';
   const filterRow = document.getElementById('filterRow');
-  const memberCards = document.querySelectorAll('.member-card');
+  const refreshBtn = document.getElementById('refreshMembersBtn');
+  const memberGrid = document.getElementById('memberGrid');
+  let memberCards = document.querySelectorAll('.member-card');
   const memberEmpty = document.getElementById('memberEmpty');
 
-  filterRow.addEventListener('click', (event) => {
-    const btn = event.target.closest('.filter-pill');
-    if (!btn) return;
+  function sanitizeText(value) {
+    return String(value || '').replace(/<[^>]*>/g, '').trim();
+  }
 
-    filterRow.querySelectorAll('.filter-pill').forEach((p) => p.classList.remove('active'));
-    btn.classList.add('active');
+  function loadApprovedRegistrations() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      const rows = JSON.parse(raw);
+      return Array.isArray(rows)
+        ? rows.filter((row) => String(row.Status || '').toLowerCase() === 'approved')
+        : [];
+    } catch (error) {
+      console.warn('Failed to load approved registrations:', error);
+      return [];
+    }
+  }
 
-    const filter = btn.dataset.filter;
-    let visibleCount = 0;
+  function createMemberCard(row) {
+    const article = document.createElement('article');
+    article.className = 'member-card';
+    article.dataset.team = sanitizeText(row.Department || 'member').toLowerCase();
+    article.dataset.generated = '1';
 
+    const name = sanitizeText(row.Name || 'Applicant');
+    const department = sanitizeText(row.Department || 'General');
+    const year = sanitizeText(row.Year || 'Year unknown');
+    const metaText = [department, year].filter(Boolean).join(' · ');
+    const badgeLabel = row.Status && String(row.Status).toLowerCase() === 'approved' ? 'Approved' : 'Member';
+
+    const initials = sanitizeText(name)
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase();
+
+    const avatarContent = row['Photo Data']
+      ? `<img src="data:${row['Photo Type'] || 'image/jpeg'};base64,${row['Photo Data']}" alt="${name}" loading="lazy" width="54" height="54">`
+      : initials || '★';
+
+    article.innerHTML = `
+      <div class="member-avatar">${avatarContent}</div>
+      <h3>${name}</h3>
+      <span class="member-role">${department}</span>
+      <p class="member-meta">${sanitizeText(year)}</p>
+      <span class="member-tag">${badgeLabel}</span>
+    `;
+
+    return article;
+  }
+
+  function updateMemberCards() {
+    memberCards = document.querySelectorAll('.member-card');
+  }
+
+  function updateMemberEmpty() {
+    const visibleCount = Array.from(memberCards).filter((card) => card.style.display !== 'none').length;
+    if (memberEmpty) {
+      memberEmpty.hidden = visibleCount !== 0;
+    }
+  }
+
+  function applyFilter(filter) {
     memberCards.forEach((card) => {
       const match = filter === 'all' || card.dataset.team === filter;
       card.style.display = match ? '' : 'none';
-      if (match) visibleCount++;
     });
+    updateMemberEmpty();
+  }
 
-    memberEmpty.hidden = visibleCount !== 0;
+  function renderApprovedMembers() {
+    if (!memberGrid) return;
+    memberGrid.querySelectorAll('.member-card[data-generated="1"]').forEach((card) => card.remove());
+    const approvedMembers = loadApprovedRegistrations();
+    approvedMembers.forEach((row) => memberGrid.appendChild(createMemberCard(row)));
+    updateMemberCards();
+    applyFilter(filterRow.querySelector('.active')?.dataset.filter || 'all');
+  }
+
+  refreshBtn?.addEventListener('click', () => {
+    renderApprovedMembers();
+    if (refreshBtn) {
+      const originalText = refreshBtn.textContent;
+      refreshBtn.textContent = 'Refreshed';
+      setTimeout(() => { refreshBtn.textContent = originalText; }, 1200);
+    }
   });
+
+  window.addEventListener('storage', (event) => {
+    if (event.key === STORAGE_KEY) {
+      renderApprovedMembers();
+    }
+  });
+
+  filterRow?.addEventListener('click', (event) => {
+    const btn = event.target.closest('.filter-pill');
+    if (!btn) return;
+    filterRow.querySelectorAll('.filter-pill').forEach((p) => p.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilter(btn.dataset.filter);
+  });
+
+  renderApprovedMembers();
 </script>
 </body>
 </html>
