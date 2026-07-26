@@ -60,23 +60,23 @@ window.addEventListener('load', () => {
   initPremiumText();
 });
 
-// generate simple stars once on pointer-fine devices only
-const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-if (starfield && hasFinePointer) {
-  const STAR_COUNT = 66;
+// generate simple stars in the background for all devices
+const isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+if (starfield) {
+  starfield.innerHTML = '';
+  const STAR_COUNT = isFinePointer ? 66 : 36;
   for (let i = 0; i < STAR_COUNT; i += 1) {
     const s = document.createElement('span');
     s.className = 'star';
-    const size = Math.random() * 2.8 + 0.6; // px
+    const size = isFinePointer ? Math.random() * 2.8 + 0.6 : Math.random() * 2.2 + 0.5;
     s.style.width = `${size}px`;
     s.style.height = `${size}px`;
     s.style.left = `${Math.random() * 100}vw`;
     s.style.top = `${Math.random() * 100}vh`;
-    s.style.opacity = `${0.25 + Math.random() * 0.8}`;
-    // twinkle timing and slight blur for larger stars
+    s.style.opacity = `${0.25 + Math.random() * 0.6}`;
     s.style.animationDuration = `${1.4 + Math.random() * 3.0}s`;
     s.style.animationDelay = `${Math.random() * 3}s`;
-    if (size > 2.6) s.style.filter = 'blur(0.6px)';
+    if (size > 2.4) s.style.filter = 'blur(0.5px)';
     starfield.appendChild(s);
   }
 }
@@ -166,7 +166,12 @@ smoothAnchorLinks.forEach((link) => {
 
     if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || link.target === '_blank') return;
     event.preventDefault();
-    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const targetPosition = targetEl.getBoundingClientRect().top + window.pageYOffset - 96;
+    window.scrollTo({
+      top: targetPosition,
+      left: 0,
+      behavior: 'smooth'
+    });
   });
 });
 
