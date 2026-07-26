@@ -99,7 +99,7 @@ if (navToggle && mainNav) {
 const header = document.querySelector('.site-header');
 const progressBar = document.getElementById('scrollProgress');
 const backToTop = document.getElementById('backToTop');
-const revealItems = document.querySelectorAll('.hero-copy, .hero-card, .about-intro, .about-grid, .about-point, .detail-card, .leader-card, .team-card, .event-card, .apply-inner, .apply-form, .member-card, .events-empty');
+const revealItems = document.querySelectorAll('.hero-copy, .hero-card, .about-intro, .about-grid, .about-point, .detail-card, .leader-card, .team-card, .event-card, .apply-inner, .apply-form, .member-card, .events-empty, .section-head, .section-visual, .contact-inner');
 
 revealItems.forEach((item, index) => {
   item.classList.add('reveal');
@@ -245,6 +245,36 @@ if (applyForm) {
   const formStatus = document.getElementById('formStatus');
   const submitBtn = applyForm.querySelector('button[type="submit"]');
   const cancelBtn = document.getElementById('cancelRegistrationBtn');
+  const profilePhoto = document.getElementById('profilePhoto');
+  const profilePreview = document.getElementById('profilePreview');
+  const profilePreviewImage = document.getElementById('profilePreviewImage');
+  const removeProfilePhoto = document.getElementById('removeProfilePhoto');
+
+  profilePhoto?.addEventListener('change', () => {
+    const file = profilePhoto.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024 || !file.type.startsWith('image/')) {
+      profilePhoto.value = '';
+      profilePreview.hidden = true;
+      formStatus.textContent = 'Please choose an image smaller than 2 MB.';
+      formStatus.style.color = '#E8483A';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      profilePreviewImage.src = reader.result;
+      profilePreview.hidden = false;
+      formStatus.textContent = '';
+      formStatus.style.color = '';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  removeProfilePhoto?.addEventListener('click', () => {
+    profilePhoto.value = '';
+    profilePreview.hidden = true;
+    profilePreviewImage.removeAttribute('src');
+  });
 
   cancelBtn?.addEventListener('click', () => {
     applyForm.reset();
@@ -303,6 +333,7 @@ if (applyForm) {
         interest: sanitizeText(document.getElementById('interest').value),
         experience: sanitizeText(document.getElementById('experience').value),
         reason: sanitizeText(document.getElementById('reason').value),
+        profilePhoto: profilePreviewImage?.src || '',
         _gotcha: document.querySelector('input[name="_gotcha"]')?.value || ''
       };
 
@@ -332,6 +363,7 @@ if (applyForm) {
         Interest: payload.interest,
         Experience: payload.experience,
         Reason: payload.reason,
+        'Profile Photo': payload.profilePhoto,
         Status: 'Pending'
       };
       rows.push(normalizeRegistrationRecord(row));

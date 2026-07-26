@@ -36,6 +36,11 @@
   <!-- HERO -->
   <div class="hero-particle-layer" aria-hidden="true"></div>
   <section class="hero">
+    <div class="thinking-earth" aria-hidden="true">
+      <div class="earth-orbit"></div>
+      <div class="earth-globe"><span></span></div>
+      <div class="earth-thinker"><i></i><b></b><em></em></div>
+    </div>
     <div class="hero-copy">
       <p class="eyebrow">InnoPitch &amp; Greenovation Mavericks Club</p>
       <h1 class="premium-text">Build your career.<br>Shape your ideas.<br><span class="highlight">Pitch your future.</span></h1>
@@ -52,7 +57,18 @@
     </div>
 
     <div class="hero-card">
-      <p class="card-label">Next session</p>
+      <div class="session-card-topline">
+        <p class="card-label">Next session</p>
+        <span class="session-status"><i></i> Planning</span>
+      </div>
+      <div class="startup-idea" aria-hidden="true">
+        <div class="idea-orbit idea-orbit-one"></div>
+        <div class="idea-orbit idea-orbit-two"></div>
+        <div class="idea-core"><span>✦</span></div>
+        <i class="idea-spark spark-one">+</i>
+        <i class="idea-spark spark-two">•</i>
+        <i class="idea-spark spark-three">✦</i>
+      </div>
       <h3 class="card-title">To be announced</h3>
       <p class="card-detail">Calendar for this semester is being finalized.</p>
       <p class="card-detail">Applicants get notified first.</p>
@@ -164,6 +180,20 @@
       </article>
       <article class="leader-card">
         <div class="leader-avatar">
+          <img src="thichika.jpeg" alt="Thichika" loading="lazy" width="400" height="400">
+        </div>
+        <h3>Thichika</h3>
+        <span class="leader-role">Student Coordinator</span>
+        <p class="leader-dept">2nd Year · 2025–2029</p>
+      </article>
+      <article class="leader-card">
+        <div class="leader-avatar">K</div>
+        <h3>Karthikeyan</h3>
+        <span class="leader-role">PRO</span>
+        <p class="leader-dept">2nd Year Â· 2025â€“2029</p>
+      </article>
+      <article class="leader-card">
+        <div class="leader-avatar">
           <img src="dharshini-devi.jpeg" alt="Dharshini Devi" loading="lazy" width="400" height="400">
         </div>
         <h3>Dharshini Devi</h3>
@@ -172,15 +202,7 @@
       </article>
       <article class="leader-card">
         <div class="leader-avatar">
-          <img src="thichika.jpeg" alt="Thichika" loading="lazy" width="400" height="400">
-        </div>
-        <h3>Thichika</h3>
-        <span class="leader-role">Student Coordinator</span>
-        <p class="leader-dept">2nd Year · 2025–2029</p>
-      </article>
-      <article class="leader-card">
-        <div class="leader-avatar">
-          <img src="karthikeyan.jpg" alt="Karthick" loading="lazy" width="400" height="400">
+          <img src="karthick.jpg" alt="Karthick" loading="lazy" width="400" height="400">
         </div>
         <h3>Karthick</h3>
         <span class="leader-role">Coordinator</span>
@@ -352,6 +374,16 @@
             <div class="field">
             <label for="reason">Why do you want to join?</label>
             <textarea id="reason" name="reason" rows="4" placeholder="Share your motivation and vision" required></textarea>
+          </div>
+        </div>
+
+        <div class="field profile-upload-field">
+          <label for="profilePhoto">Profile picture <span>(optional)</span></label>
+          <input type="file" id="profilePhoto" name="profilePhoto" accept="image/png,image/jpeg,image/webp">
+          <small>Upload a clear photo, up to 2 MB.</small>
+          <div class="profile-preview" id="profilePreview" hidden>
+            <img id="profilePreviewImage" alt="Profile picture preview">
+            <button type="button" id="removeProfilePhoto">Remove photo</button>
           </div>
         </div>
 
