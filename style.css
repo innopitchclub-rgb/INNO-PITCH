@@ -2211,6 +2211,7 @@ main, section, .table-wrap, .main-nav {
   position: fixed;
   inset: 0;
   z-index: 999;
+  pointer-events: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3098,6 +3099,95 @@ main, .site-footer, .contact { position: relative; z-index: 1; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .starfield .star, .leader-card, .member-card { animation: none; }
+}
+
+/* ---------- touch-scroll performance guard ----------
+   Mobile browsers must be able to keep scrolling on the compositor thread.
+   The decorative blur/3D animations are intentionally disabled on small,
+   touch-oriented viewports; they do not contribute to page functionality. */
+@media (max-width: 640px) and (pointer: coarse) {
+  html,
+  body {
+    height: auto !important;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll !important;
+    scroll-behavior: smooth;
+    overscroll-behavior-y: auto;
+    scrollbar-gutter: auto;
+  }
+
+  body {
+    touch-action: auto !important;
+    overscroll-behavior-y: auto;
+  }
+
+  body::before,
+  body::after,
+  .spotlight,
+  .starfield,
+  .aurora-blob {
+    animation: none !important;
+    filter: none !important;
+  }
+
+  .starfield,
+  .spotlight,
+  .aurora-blob {
+    display: none !important;
+  }
+
+  main { perspective: none; }
+  section:not(.hero),
+  .section-head,
+  .section-visual,
+  .events-empty,
+  .contact-inner,
+  .apply-inner,
+  .about-intro,
+  .reveal,
+  .leader-card,
+  .team-card,
+  .event-card,
+  .member-card,
+  .about-point,
+  .detail-card {
+    transform: none !important;
+    transform-style: flat !important;
+    filter: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Consistent smooth scrolling on touch devices and desktop browsers. */
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Keep the document (html), not body or a component, as the only mobile
+   scroll container. This is reliable on iOS Safari, Android Chrome, and
+   desktop browsers using a narrow/device-emulation viewport. */
+@media (max-width: 900px) {
+  html {
+    height: auto !important;
+    min-height: 100%;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    touch-action: auto !important;
+  }
+
+  body {
+    height: auto !important;
+    min-height: 100vh;
+    overflow: visible !important;
+    touch-action: auto !important;
+  }
 }
 
 @media (max-width: 900px) {
