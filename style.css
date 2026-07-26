@@ -2084,6 +2084,106 @@ body.page-ready .hero-visual {
   .about-grid { grid-template-columns: 1fr 1fr; }
   .leader-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ---------- small-screen layout polish ---------- */
+@media (max-width: 640px) {
+  html { overflow-x: hidden; }
+  body { min-width: 0; }
+
+  .site-header {
+    min-height: 64px;
+    padding: 0.8rem 1rem;
+  }
+  .brand {
+    min-width: 0;
+    max-width: calc(100% - 48px);
+    font-size: clamp(0.82rem, 3.5vw, 1rem);
+    line-height: 1.15;
+  }
+  .nav-toggle { flex: 0 0 auto; }
+  .main-nav {
+    left: 0.75rem;
+    right: 0.75rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  section {
+    width: 100%;
+    padding: 3.25rem 1rem;
+    scroll-margin-top: 76px;
+  }
+  .hero {
+    padding-top: 3rem;
+    padding-bottom: 3.5rem;
+    gap: 1.8rem;
+  }
+  .hero h1 { font-size: clamp(2.15rem, 11vw, 3.1rem); line-height: 1.04; }
+  .hero-sub, .section-sub { font-size: 0.96rem; line-height: 1.65; }
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .hero-actions .btn { width: 100%; }
+  .hero-visual { margin-left: 0; margin-right: 0; }
+  .hero-card { padding: 1.4rem 1.15rem; }
+
+  .about-grid, .leader-grid, .member-grid { gap: 0.75rem; }
+  .about-grid { grid-template-columns: 1fr 1fr; }
+  .leader-grid { grid-template-columns: 1fr 1fr; }
+  .member-card { min-width: 0; }
+  .member-card h3, .leader-card h3 { overflow-wrap: anywhere; }
+  .detail-grid, .about-points, .team-grid { gap: 0.85rem; }
+  .event-card { padding: 1rem; }
+  .event-card .btn-outline { width: 100%; }
+
+  .members-hero { padding-top: 3rem; padding-bottom: 1.5rem; }
+  .members-hero h1 { font-size: clamp(2.1rem, 10vw, 3rem); }
+  .filter-row { gap: 0.5rem; }
+  .filter-pill { flex: 1 1 auto; min-height: 42px; }
+
+  .footer-grid { gap: 1.5rem; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+
+  .admin-root { padding: 1rem; }
+  .admin-login, .admin-dashboard { padding: 1.15rem; border-radius: 18px; }
+  .admin-header { flex-direction: column; align-items: stretch; gap: 1rem; }
+  .admin-header-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .admin-header-actions .btn { width: 100%; }
+  .summary-cards { grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+  .admin-search-bar { grid-template-columns: 1fr; gap: 0.65rem; }
+  .admin-search-bar .btn { width: 100%; }
+  .table-wrap { overflow-x: auto; max-width: 100%; }
+  #registrationsTable { min-width: 720px; }
+}
+
+@media (max-width: 380px) {
+  .about-grid, .leader-grid { grid-template-columns: 1fr; }
+  .admin-header-actions { grid-template-columns: 1fr; }
+}
+
+/* ---------- mobile smooth scrolling ---------- */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 76px;
+}
+
+body {
+  overscroll-behavior-y: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+main, section, .table-wrap, .main-nav {
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 640px) {
+  html { scroll-padding-top: 72px; }
+  body { overflow-x: hidden; }
+  section { scroll-margin-top: 72px; }
+  .table-wrap { overscroll-behavior-x: contain; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
 /* ===========================================================
    PREMIUM UPGRADE LAYER
    Added on top of the existing design system. No existing
@@ -3131,6 +3231,32 @@ main, .site-footer, .contact { position: relative; z-index: 1; }
     width: 100%;
     justify-content: center;
   }
+}
+
+/* Final mobile overrides (kept last so component rules cannot undo them). */
+@media (max-width: 640px) {
+  .site-header { min-height: 64px; padding: 0.8rem 1rem; }
+  .brand { max-width: calc(100% - 48px); font-size: clamp(0.82rem, 3.5vw, 1rem); line-height: 1.15; }
+  section { width: 100%; padding-left: 1rem; padding-right: 1rem; scroll-margin-top: 76px; }
+  .hero h1 { font-size: clamp(2.15rem, 11vw, 3.1rem); line-height: 1.04; }
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .hero-actions .btn, .event-card .btn-outline { width: 100%; }
+  .members-hero { padding-top: 3rem; padding-bottom: 1.5rem; }
+  .filter-row { gap: 0.5rem; }
+  .filter-pill { flex: 1 1 auto; min-height: 42px; }
+  .admin-root { padding: 1rem; }
+  .admin-login, .admin-dashboard { padding: 1.15rem; border-radius: 18px; }
+  .admin-header { flex-direction: column; align-items: stretch; gap: 1rem; }
+  .admin-header-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .admin-header-actions .btn { width: 100%; }
+  .admin-search-bar { display: flex; flex-direction: column; align-items: stretch; gap: 0.65rem; }
+  .table-wrap { overflow-x: auto; max-width: 100%; }
+  #registrationsTable { min-width: 720px; }
+}
+
+@media (max-width: 380px) {
+  .about-grid, .leader-grid { grid-template-columns: 1fr; }
+  .admin-header-actions { grid-template-columns: 1fr; }
 }
 
 
