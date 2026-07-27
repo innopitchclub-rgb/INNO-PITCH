@@ -1,4 +1,25 @@
 // ---------- footer year ----------
+const cinematicIntro = document.getElementById('cinematicIntro');
+const cinematicSwipe = document.getElementById('cinematicSwipe');
+
+function closeCinematicIntro() {
+  if (!cinematicIntro || cinematicIntro.classList.contains('is-hidden')) return;
+  cinematicIntro.classList.add('is-hidden');
+  document.body.classList.remove('intro-locked');
+  window.setTimeout(() => cinematicIntro.remove(), 900);
+}
+
+if (cinematicIntro) {
+  document.body.classList.add('intro-locked');
+  cinematicSwipe?.addEventListener('click', closeCinematicIntro);
+  let touchStartY = 0;
+  cinematicIntro.addEventListener('touchstart', (event) => { touchStartY = event.touches[0].clientY; }, { passive: true });
+  cinematicIntro.addEventListener('touchend', (event) => {
+    if (touchStartY - event.changedTouches[0].clientY > 45) closeCinematicIntro();
+  }, { passive: true });
+  window.setTimeout(closeCinematicIntro, 6500);
+}
+
 const yearEl = document.getElementById('footerYear');
 if (yearEl) {
   yearEl.textContent = new Date().getFullYear();

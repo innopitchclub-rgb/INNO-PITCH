@@ -544,6 +544,7 @@ async function initAdminDashboard() {
 
   const togglePasswordBtn = document.getElementById('togglePassword');
   const refreshBtn = document.getElementById('refreshBtn');
+  const clearAllRegistrationsBtn = document.getElementById('clearAllRegistrationsBtn');
   adminPasswordInput?.addEventListener('focus', () => {
     adminPasswordInput.classList.add('has-focus');
   });
@@ -598,6 +599,17 @@ async function initAdminDashboard() {
   refreshBtn?.addEventListener('click', async () => {
     await fetchRows();
     showToast('Registration list refreshed.', 'success');
+  });
+
+  clearAllRegistrationsBtn?.addEventListener('click', async () => {
+    if (!allRows.length) {
+      showToast('There are no registrations to clear.', 'success');
+      return;
+    }
+    if (!window.confirm(`Delete all ${allRows.length} registrations? This cannot be undone.`)) return;
+    localStorage.removeItem(STORAGE_KEY);
+    await fetchRows();
+    showToast('All registrations cleared.', 'success');
   });
 
   loginForm?.addEventListener('submit', async (event) => {
